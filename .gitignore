@@ -1,0 +1,11 @@
+/__pycache__/
+.env
+helper.py
+/config/__pycache__
+/controller/__pycache__
+/dependency/__pycache__
+/model/__pycache__
+/model/database/__pycache__
+/model/pydantic/__pycache__
+/repository/__pycache__
+service/__pycache__
