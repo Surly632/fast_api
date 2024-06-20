@@ -1,0 +1,63 @@
+ from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Table
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, sessionmaker
+
+# Create an engine
+engine = create_engine('sqlite:///example.db', echo=True)
+
+Base = declarative_base()
+
+# Define one-to-one relationship
+class Parent(Base):
+    __tablename__ = 'parents'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    child = relationship("Child", uselist=False, back_populates="parent", cascade="all, delete-orphan")
+
+class Child(Base):
+    __tablename__ = 'children'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    parent_id = Column(Integer, ForeignKey('parents.id'), unique=True)
+    parent = relationship("Parent", back_populates="child")
+
+# Define one-to-many relationship
+class Parent(Base):
+    __tablename__ = 'parents'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    children = relationship("Child", back_populates="parent")
+
+class Child(Base):
+    __tablename__ = 'children'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    parent_id = Column(Integer, ForeignKey('parents.id'))
+    parent = relationship("Parent", back_populates="children")
+
+
+
+# Define many-to-many relationship
+association_table = Table('association', Base.metadata,
+    Column('parent_id', Integer, ForeignKey('parents.id')),
+    Column('child_id', Integer, ForeignKey('children.id'))
+)
+
+class Parent(Base):
+    __tablename__ = 'parents'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    children = relationship("Child", secondary=association_table, back_populates="parents")
+
+class Child(Base):
+    __tablename__ = 'children'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    parents = relationship("Parent", secondary=association_table, back_populates="children")
+
+# Create tables
+Base.metadata.create_all(engine)
+
+# Create a session
+Session = sessionmaker(bind=engine)
+session = Session()
